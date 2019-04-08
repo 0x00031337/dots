@@ -49,6 +49,8 @@ func configureDotsCommand(app *kingpin.Application) *dots.DotsConfig {
 		BoolVar(&c.Mainnet)
 	app.Flag("do-relay", "Relay transactions to network. (default:false)").
 		BoolVar(&c.RelayTransactions)
+	app.Flag("no-donations", "Do not send donations. Privacy implications unknown. (default:false)").
+		BoolVar(&c.NoDonations)
 
 	app.Parse(os.Args[1:])
 

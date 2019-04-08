@@ -63,21 +63,39 @@ func DriveTransaction(accountFrom walletrpc.SubaddressAccount,
 			break
 		}
 
-		fmt.Println("donate")
-		donation := ChooseDonation()
-		fmt.Printf("Donating to %s\n", donation.Name)
-		res, err := Donate(accountPending, donation.Address, client)
-		if err != nil {
-			if iswerr, werr := walletrpc.GetWalletError(err); iswerr {
-				// insufficient funds return a monero wallet error
-				// walletrpc.ErrGenericTransferError
-				fmt.Printf("Wallet error (id:%v) %v\n", werr.Code, werr.Message)
+		if config.NoDonations {
+			// sweep_single to self instead of making a donation
+			fmt.Println("sweep to self")
+			res, err := SweepAll(accountPending, accountPending, client)
+			if err != nil {
+				if iswerr, werr := walletrpc.GetWalletError(err); iswerr {
+					// insufficient funds return a monero wallet error
+					// walletrpc.ErrGenericTransferError
+					fmt.Printf("Wallet error (id:%v) %v\n", werr.Code, werr.Message)
+					os.Exit(1)
+				}
+				fmt.Println("Error:", err.Error())
 				os.Exit(1)
 			}
-			fmt.Println("Error:", err.Error())
-			os.Exit(1)
+			PrettyPrint(res)
+		} else {
+			fmt.Println("donate")
+			donation := ChooseDonation()
+			fmt.Printf("Donating to %s\n", donation.Name)
+			res, err := Donate(accountPending, donation.Address, client)
+			if err != nil {
+				if iswerr, werr := walletrpc.GetWalletError(err); iswerr {
+					// insufficient funds return a monero wallet error
+					// walletrpc.ErrGenericTransferError
+					fmt.Printf("Wallet error (id:%v) %v\n", werr.Code, werr.Message)
+					os.Exit(1)
+				}
+				fmt.Println("Error:", err.Error())
+				os.Exit(1)
+			}
+			PrettyPrint(res)
 		}
-		PrettyPrint(res)
+
 	}
 
 	fmt.Println(" Finished: ", Abbreviate(transfer.TxHash))
